@@ -56,12 +56,23 @@ bool load_texture (const char* file_name, GLuint* tex) {
 }
 
 
-const int cmd_parser(int argc, char* argv[])
+const int cmd_parser(int argc, char* argv[], std::string& fgimg, std::string& bgimg)
 {
     if (argc < 2)   {std::cout << "Please specify operator." << std::endl; exit(0);}
+    // specify foreground image
+    if (argc >= 3)  {fgimg = argv[2];   std::cout << "foreground image: " << fgimg << std::endl;}
+    // specify background image
+    if (argc >= 4)  {bgimg = argv[3];   std::cout << "background image: " << bgimg << std::endl;}
+    // specify operator
     if (strcmp (argv[1], "gamma") == 0) { std::cout << "gamma operator" << std::endl;  return 0;}
     if (strcmp (argv[1], "contrast") == 0)  { std::cout << "contrast operator" << std::endl;  return 1;}
     if (strcmp (argv[1], "edge") == 0)  { std::cout << "edge detect" << std::endl;  return 2;}
+    if (strcmp (argv[1], "blur") == 0)  { std::cout << "blur" << std::endl;  return 3;}
+    if (strcmp (argv[1], "sharpen") == 0)  { std::cout << "sharpen" << std::endl;  return 4;}
+    if (strcmp (argv[1], "median") == 0)  { std::cout << "median" << std::endl;  return 5;}
+    if (strcmp (argv[1], "mix") == 0)  { std::cout << "mix" << std::endl;  return 6;}
+    if (strcmp (argv[1], "over") == 0)  { std::cout << "over" << std::endl;  return 7;}
+    if (strcmp (argv[1], "chroma") == 0)  { std::cout << "chroma key" << std::endl;  return 9;}
     else    {std::cout << "Please specify correct operator." << std::endl; exit(0);}
 }
 
@@ -80,6 +91,30 @@ void set_fragment_shader(const int& id, std::string& fragment_shader_file)
 
         case 2:
             fragment_shader_file = "edge.glsl";
+            break;
+
+        case 3:
+            fragment_shader_file = "blur.glsl";
+            break;
+
+        case 4:
+            fragment_shader_file = "sharpen.glsl";
+            break;
+
+        case 5:
+            fragment_shader_file = "median.glsl";
+            break;
+
+        case 6:
+            fragment_shader_file = "mix.glsl";
+            break;
+
+        case 7:
+            fragment_shader_file = "over.glsl";
+            break;
+
+        case 9:
+            fragment_shader_file = "chroma.glsl";
             break;
 
         default:
@@ -104,11 +139,19 @@ void update_contrast(const GLuint& shader_program, float& contrast)
     if (gamma_loc != -1) { glUniform1f(gamma_loc, contrast); }
 }
 
+void update_mix(const GLuint& shader_program, float& mix)
+{
+    std::cout << "mix mix: " << mix << std::endl;
+    GLint gamma_loc = glGetUniformLocation(shader_program, "mix");
+    if (gamma_loc != -1) { glUniform1f(gamma_loc, mix); }
+}
+
 
 int main (int argc, char* argv[])
 {
-    int id = cmd_parser(argc, argv);
-    std::cout << "id: " << id << std::endl;
+    std::string fgimg = "a.png";
+    std::string bgimg = "b.png";
+    int id = cmd_parser(argc, argv, fgimg, bgimg);
     std::string fragment_shader_file;
     set_fragment_shader(id, fragment_shader_file);
 
@@ -165,21 +208,23 @@ int main (int argc, char* argv[])
 	int tex00location = glGetUniformLocation (shader_program, "texture00");
 	glUniform1i (tex00location, 0);
 	glActiveTexture (GL_TEXTURE0);
-	assert (load_texture ("a.png", &tex00));
+	assert (load_texture (fgimg.c_str(), &tex00));
 
 	GLuint tex01;
 	int tex01location = glGetUniformLocation (shader_program, "texture01");
 	glUniform1i (tex01location, 1);
 	glActiveTexture (GL_TEXTURE1);
-	assert (load_texture ("b.png", &tex01));
+	assert (load_texture (bgimg.c_str(), &tex01));
 
 
 /*-------------------------------CHANGE PARMS-------------------------------*/
-//    // change gamma_value
-    float gamma_value = 2.2;
+
+    float gamma_value = 1.0;
     float contrast = 1.0;
+    float mix_mix = 0.5;
     if (id == 0)    {update_gamma(shader_program, gamma_value);}
     if (id == 1)    {update_contrast(shader_program, contrast);}
+    if (id == 6)    {update_mix(shader_program, mix_mix);}
 
 /*---------------------------SET RENDERING DEFAULTS---------------------------*/
 
@@ -221,6 +266,11 @@ int main (int argc, char* argv[])
                 contrast += 0.05;
                 update_contrast(shader_program, contrast);
             }
+            if (id == 6)
+            {
+                mix_mix *= 1.05;
+                update_mix(shader_program, mix_mix);
+            }
         }
         if (GLFW_PRESS == glfwGetKey (g_window, GLFW_KEY_DOWN )) {
             if (id == 0)
@@ -232,6 +282,11 @@ int main (int argc, char* argv[])
             {
                 contrast -= 0.05;
                 update_contrast(shader_program, contrast);
+            }
+            if (id == 6)
+            {
+                mix_mix /= 1.05;
+                update_mix(shader_program, mix_mix);
             }
         }
 		// put the stuff we've been drawing onto the display

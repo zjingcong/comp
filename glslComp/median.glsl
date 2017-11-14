@@ -17,27 +17,43 @@ vec4 get_pixel_color(float u, float v)
     return pixel_color;
 }
 
+float get_median(float a[9])
+{
+    for (int i = 0; i < 9; i++) {
+        float x = a[i];
+        for (int j = 0; j < i; j++)
+            if (a[j] > x) {
+                float tmp = a[j];
+                a[j] = x;
+                x = tmp;
+            }
+        a[i] = x;
+    }
+    return a[5];
+}
+
 void main ()
 {
     float pixel_width = 1.0 / 512;
     float u = texture_coords.x;
     float v = texture_coords.y;
 
-    vec3 out_color = vec3(0.0, 0.0, 0.0);
-    mat3 kernel = mat3(
-            -1.0, -1.0, -1.0,
-            -1.0, 8.0, -1.0,
-            -1.0, -1.0, -1.0
-    );
+    float r[9];
+    float g[9];
+    float b[9];
+    int k = 0;
     for (int i = -1; i <= 1; ++i)
     {
-        for (int j = -1; j < 1; ++j)
+        for (int j = -1; j < 1; ++j, k++)
         {
             vec4 pixel_color = get_pixel_color(u + i * pixel_width, v + j * pixel_width);
-            float weight = kernel[i + 1][j + 1];
-            out_color += (pixel_color.rgb * weight);
+            r[k] = pixel_color.r;
+            g[k] = pixel_color.g;
+            b[k] = pixel_color.b;
         }
     }
-
-	fragment_color = vec4(out_color, 1.0);
+    float r_median = get_median(r);
+    float g_median = get_median(g);
+    float b_median = get_median(b);
+	fragment_color = vec4(r_median, g_median, b_median, 1.0);
 }

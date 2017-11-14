@@ -24,11 +24,21 @@ void main ()
     float v = texture_coords.y;
 
     vec3 out_color = vec3(0.0, 0.0, 0.0);
-    mat3 kernel = mat3(
-            -1.0, -1.0, -1.0,
-            -1.0, 8.0, -1.0,
-            -1.0, -1.0, -1.0
-    );
+    // box blur
+//    mat3 kernel = (1.0 / 9.0) *
+//                  mat3(
+//                          1.0, 1.0, 1.0,
+//                          1.0, 1.0, 1.0,
+//                          1.0, 1.0, 1.0
+//                  );
+
+    // gaussian blur 3 × 3
+    mat3 kernel = (1.0 / 16.0) *
+                  mat3(
+                          1.0, 2.0, 1.0,
+                          2.0, 4.0, 2.0,
+                          1.0, 2.0, 1.0
+                  );
     for (int i = -1; i <= 1; ++i)
     {
         for (int j = -1; j < 1; ++j)

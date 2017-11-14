@@ -6,7 +6,8 @@ uniform float gamma;
 
 out vec4 fragment_color;   
 
-void main () {
+void main ()
+{
     vec4 texel_a = texture (texture00, texture_coords);
 
     float gamma_correction = 1.0 / gamma;
