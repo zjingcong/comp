@@ -19,10 +19,12 @@ vec4 get_pixel_color(float u, float v)
 
 float get_median(float a[9])
 {
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < 9; i++)
+    {
         float x = a[i];
         for (int j = 0; j < i; j++)
-            if (a[j] > x) {
+            if (a[j] > x)
+            {
                 float tmp = a[j];
                 a[j] = x;
                 x = tmp;
@@ -44,7 +46,7 @@ void main ()
     int k = 0;
     for (int i = -1; i <= 1; ++i)
     {
-        for (int j = -1; j < 1; ++j, k++)
+        for (int j = -1; j <= 1; ++j, k++)
         {
             vec4 pixel_color = get_pixel_color(u + i * pixel_width, v + j * pixel_width);
             r[k] = pixel_color.r;

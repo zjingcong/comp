@@ -56,23 +56,32 @@ bool load_texture (const char* file_name, GLuint* tex) {
 }
 
 
-const int cmd_parser(int argc, char* argv[], std::string& fgimg, std::string& bgimg)
+const int cmd_parser(int argc, char* argv[], std::string& fgimg, std::string& bgimg, std::string& mimg)
 {
     if (argc < 2)   {std::cout << "Please specify operator." << std::endl; exit(0);}
     // specify foreground image
     if (argc >= 3)  {fgimg = argv[2];   std::cout << "foreground image: " << fgimg << std::endl;}
     // specify background image
     if (argc >= 4)  {bgimg = argv[3];   std::cout << "background image: " << bgimg << std::endl;}
+    // specify mask image
+    if (argc >= 5)  {mimg = argv[4];   std::cout << "mask image: " << mimg << std::endl;}
     // specify operator
+    /// manipulation methods
     if (strcmp (argv[1], "gamma") == 0) { std::cout << "gamma operator" << std::endl;  return 0;}
     if (strcmp (argv[1], "contrast") == 0)  { std::cout << "contrast operator" << std::endl;  return 1;}
+    /// spatial filters
     if (strcmp (argv[1], "edge") == 0)  { std::cout << "edge detect" << std::endl;  return 2;}
     if (strcmp (argv[1], "blur") == 0)  { std::cout << "blur" << std::endl;  return 3;}
     if (strcmp (argv[1], "sharpen") == 0)  { std::cout << "sharpen" << std::endl;  return 4;}
     if (strcmp (argv[1], "median") == 0)  { std::cout << "median" << std::endl;  return 5;}
+    /// basic image comp
     if (strcmp (argv[1], "mix") == 0)  { std::cout << "mix" << std::endl;  return 6;}
     if (strcmp (argv[1], "over") == 0)  { std::cout << "over" << std::endl;  return 7;}
+    if (strcmp (argv[1], "keymix") == 0)  { std::cout << "key-mix" << std::endl;  return 8;}
+    /// matte creation and manipulation
     if (strcmp (argv[1], "chroma") == 0)  { std::cout << "chroma key" << std::endl;  return 9;}
+    if (strcmp (argv[1], "luma") == 0)  { std::cout << "luma key" << std::endl;  return 10;}
+    if (strcmp (argv[1], "colordiff") == 0)  { std::cout << "color difference" << std::endl;  return 11;}
     else    {std::cout << "Please specify correct operator." << std::endl; exit(0);}
 }
 
@@ -113,8 +122,16 @@ void set_fragment_shader(const int& id, std::string& fragment_shader_file)
             fragment_shader_file = "over.glsl";
             break;
 
+        case 8:
+            fragment_shader_file = "keymix.glsl";
+            break;
+
         case 9:
             fragment_shader_file = "chroma.glsl";
+            break;
+
+        case 10:
+            fragment_shader_file = "luma.glsl";
             break;
 
         default:
@@ -149,9 +166,10 @@ void update_mix(const GLuint& shader_program, float& mix)
 
 int main (int argc, char* argv[])
 {
-    std::string fgimg = "a.png";
-    std::string bgimg = "b.png";
-    int id = cmd_parser(argc, argv, fgimg, bgimg);
+    std::string fgimg = "a.png";    // foreground image
+    std::string bgimg = "b.png";    // background image
+    std::string mimg = "m.png";    // mask image
+    int id = cmd_parser(argc, argv, fgimg, bgimg, mimg);
     std::string fragment_shader_file;
     set_fragment_shader(id, fragment_shader_file);
 
@@ -216,6 +234,12 @@ int main (int argc, char* argv[])
 	glActiveTexture (GL_TEXTURE1);
 	assert (load_texture (bgimg.c_str(), &tex01));
 
+    GLuint tex02;
+    int tex02location = glGetUniformLocation (shader_program, "texture02");
+    glUniform1i (tex02location, 2);
+    glActiveTexture (GL_TEXTURE2);
+    assert (load_texture (mimg.c_str(), &tex02));
+
 
 /*-------------------------------CHANGE PARMS-------------------------------*/
 
@@ -230,6 +254,7 @@ int main (int argc, char* argv[])
 
 	// Setup basic GL display attributes.	
 	glEnable (GL_DEPTH_TEST);   // enable depth-testing
+    glEnable(GL_BLEND);
 	glDepthFunc (GL_LESS);      // depth-testing interprets a smaller value as "closer"
 	glEnable (GL_CULL_FACE);    // cull face
 	glCullFace (GL_BACK);       // cull back face
@@ -237,7 +262,6 @@ int main (int argc, char* argv[])
 	glClearColor (0.1, 0.1, 0.1, 1.0);   // non-black background to help spot mistakes
 	glViewport (0, 0, g_gl_width, g_gl_height); // make sure correct aspect ratio
 
-	
 /*-------------------------------RENDERING LOOP-------------------------------*/
 	
 	while (!glfwWindowShouldClose (g_window)) {

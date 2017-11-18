@@ -4,8 +4,6 @@ in vec2 texture_coords;
 uniform sampler2D texture00;
 uniform sampler2D texture01;
 
-uniform float mix;
-
 out vec4 fragment_color;
 
 vec4 premult(vec4 color)
