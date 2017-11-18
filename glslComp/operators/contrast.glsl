@@ -10,7 +10,7 @@ out vec4 fragment_color;
 float sigmoid(float in_value, float contrast)
 {
 //    float out_value = in_value + in_value * contrast * (1.0 / (1.0 + exp(-in_value)));    // ref: Hassan1&2, Naglaa, and Norio Akamatsu. "A new approach for contrast enhancement using sigmoid function." (2004).
-    float out_value = 1.0 / (1.0 + exp(-contrast * (in_value - 0.5)));
+    float out_value = 1.0 / (1.0 + exp(-(contrast * 10.0) * (in_value - 0.5)));
     return out_value;
 }
 

@@ -43,6 +43,6 @@ void main ()
     vec4 matte_color = vec4(matte, matte, matte, matte);
     vec4 over_color = over(vec4(texel_a.rgb, matte));
 
-//    fragment_color = matte_color;
-    fragment_color = over_color;
+    fragment_color = matte_color;
+//    fragment_color = over_color;
 }

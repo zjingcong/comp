@@ -30,29 +30,29 @@ void main ()
     );
 
     // for all channels
-//    vec4 out_color = vec4(0.0, 0.0, 0.0, 0.0);
-//    for (int i = -1; i <= 1; ++i)
-//    {
-//        for (int j = -1; j <= 1; ++j)
-//        {
-//            vec4 pixel_color = get_pixel_color(u + i * pixel_width, v + j * pixel_width);
-//            float weight = kernel[i + 1][j + 1];
-//            out_color += (pixel_color * weight);
-//        }
-//    }
-
-    // edge detection for grayscale
-    vec3 out_color = vec3(0.0, 0.0, 0.0);
+    vec4 out_color = vec4(0.0, 0.0, 0.0, 0.0);
     for (int i = -1; i <= 1; ++i)
     {
         for (int j = -1; j <= 1; ++j)
         {
             vec4 pixel_color = get_pixel_color(u + i * pixel_width, v + j * pixel_width);
-            float graycolor = 0.21 * pixel_color.r + 0.72 * pixel_color.g + 0.07 * pixel_color.b;
             float weight = kernel[i + 1][j + 1];
-            out_color += (vec3(graycolor, graycolor, graycolor) * weight);
+            out_color += (pixel_color * weight);
         }
     }
+
+    // edge detection for grayscale
+//    vec3 out_color = vec3(0.0, 0.0, 0.0);
+//    for (int i = -1; i <= 1; ++i)
+//    {
+//        for (int j = -1; j <= 1; ++j)
+//        {
+//            vec4 pixel_color = get_pixel_color(u + i * pixel_width, v + j * pixel_width);
+//            float graycolor = 0.21 * pixel_color.r + 0.72 * pixel_color.g + 0.07 * pixel_color.b;
+//            float weight = kernel[i + 1][j + 1];
+//            out_color += (vec3(graycolor, graycolor, graycolor) * weight);
+//        }
+//    }
 
 	fragment_color = vec4(out_color.rgb, 1.0);
 }

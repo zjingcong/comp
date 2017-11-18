@@ -16,5 +16,5 @@ void main ()
     float b = pow(texel_a.b, gamma_correction);
     vec4 out_color = vec4(r, g, b, texel_a.a);
 
-	fragment_color = out_color; 
+	fragment_color = out_color;
 }

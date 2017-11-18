@@ -20,6 +20,7 @@
 #define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
 
 #define VERTEX_SHADER_FILE   "vs.glsl"
+#define OPERATORS_PATH  "operators/"
 
 
 bool load_texture (const char* file_name, GLuint* tex) {
@@ -58,7 +59,7 @@ bool load_texture (const char* file_name, GLuint* tex) {
 
 const int cmd_parser(int argc, char* argv[], std::string& fgimg, std::string& bgimg, std::string& mimg)
 {
-    if (argc < 2)   {std::cout << "Please specify operator." << std::endl; exit(0);}
+    if (argc < 2)   {std::cout << "Please specify operator: gamma, contrast, edge, blur, sharpen, median, mix, over, keymix, chroma, luma, colordiff, identity(original image)" << std::endl; exit(0);}
     // specify foreground image
     if (argc >= 3)  {fgimg = argv[2];   std::cout << "foreground image: " << fgimg << std::endl;}
     // specify background image
@@ -82,7 +83,9 @@ const int cmd_parser(int argc, char* argv[], std::string& fgimg, std::string& bg
     if (strcmp (argv[1], "chroma") == 0)  { std::cout << "chroma key" << std::endl;  return 9;}
     if (strcmp (argv[1], "luma") == 0)  { std::cout << "luma key" << std::endl;  return 10;}
     if (strcmp (argv[1], "colordiff") == 0)  { std::cout << "color difference" << std::endl;  return 11;}
-    else    {std::cout << "Please specify correct operator." << std::endl; exit(0);}
+    /// original image
+    if (strcmp (argv[1], "identity") == 0)  { std::cout << "output original image" << std::endl;  return 100;}
+    else    {std::cout << "Please specify operator: gamma, contrast, edge, blur, sharpen, median, mix, over, keymix, chroma, luma, colordiff, identity(original image)" << std::endl;   exit(0);}
 }
 
 
@@ -134,9 +137,15 @@ void set_fragment_shader(const int& id, std::string& fragment_shader_file)
             fragment_shader_file = "luma.glsl";
             break;
 
+        case 11:
+            fragment_shader_file = "colordiff.glsl";
+            break;
+
         default:
+            fragment_shader_file = "identity.glsl";
             break;
     }
+    fragment_shader_file = OPERATORS_PATH + fragment_shader_file;
     std::cout << "set fragment shader to file: " << fragment_shader_file << std::endl;
 }
 
@@ -166,9 +175,9 @@ void update_mix(const GLuint& shader_program, float& mix)
 
 int main (int argc, char* argv[])
 {
-    std::string fgimg = "a.png";    // foreground image
-    std::string bgimg = "b.png";    // background image
-    std::string mimg = "m.png";    // mask image
+    std::string fgimg = "assets/a.png";    // foreground image
+    std::string bgimg = "assets/b.png";    // background image
+    std::string mimg = "assets/m.png";    // mask image
     int id = cmd_parser(argc, argv, fgimg, bgimg, mimg);
     std::string fragment_shader_file;
     set_fragment_shader(id, fragment_shader_file);
